@@ -37,27 +37,10 @@ async def tenmans(ctx, *, player: discord.Member=None):
         await shuffle(ctx)
 
 @bot.command()
-async def shuffle(ctx): #might be good to check if lobby is full or not
-    str_players = await concatenize_players(player_list)
-    random.shuffle(str_players)
-    team_one = []
-    team_two = []
+async def reshuffle(ctx):
+    await shuffle(ctx)
+
     
-    for x in range(len(str_players)):
-        if x < 5:
-            team_one.append(str_players[x])
-        else:
-            team_two.append(str_players[x])
-
-    table = PrettyTable()
-    table.add_column("Team 1", team_one)
-    table.add_column("Team 2", team_two)
-    table.align = "c"
-
-    result = table.get_string(title="T E N M A N S")
-    print(result)
-    await ctx.send("Here are the teams\n```" + result + "```")
-
 @bot.command()
 async def showlist(ctx):
     '''displays the lobby in a pretty table'''
@@ -95,5 +78,26 @@ async def check_list(ctx, member):
             return True #true = is in lobby already
     return False
 
+async def shuffle(ctx): #might be good to check if lobby is full or not
+    '''puts players into teams'''
+    str_players = await concatenize_players(player_list)
+    random.shuffle(str_players)
+    team_one = []
+    team_two = []
+    
+    for x in range(len(str_players)):
+        if x < 5:
+            team_one.append(str_players[x])
+        else:
+            team_two.append(str_players[x])
+
+    table = PrettyTable()
+    table.add_column("Team 1", team_one)
+    table.add_column("Team 2", team_two)
+    table.align = "c"
+
+    result = table.get_string(title="T E N M A N S")
+    print(result)
+    await ctx.send("Here are the teams\n```" + result + "```")
 bot.run('NTIyNDU4Mzk2NjI5MjcwNTMx.DvLRJA.L1O1cqEIylU8WqVSA2EEDyl3htw')
 
