@@ -24,8 +24,8 @@ async def on_ready():
 #---- commands ----
     
 @bot.command()
-async def tenmans(ctx, *, player: discord.Member=None):
-    if (await check_length(ctx)):
+async def tenmans(ctx, player: discord.Member=None):
+    if (await check_length(ctx)): #adding more than one player???
         if player == None: #no extra parameter
             await ctx.send(str(ctx.author) + " has joined!")
             player_list.append(ctx.author)
@@ -36,10 +36,19 @@ async def tenmans(ctx, *, player: discord.Member=None):
     if (10 - len(player_list) < 1):
         await shuffle(ctx)
 
-@bot.command()
+@bot.command(name='shuffle')
 async def reshuffle(ctx):
     await shuffle(ctx)
 
+@bot.command()
+async def remove(ctx, member: discord.Member=None):
+    if member == None:
+        person = ctx.author
+    else:
+        person = member
+        
+    player_list.remove(person)
+    await ctx.send("Removed " + str(person) + " from the lobby.")
     
 @bot.command()
 async def showlist(ctx):
@@ -70,12 +79,12 @@ async def concatenize_players(player_list):
         string_list.append(str(player))
     return string_list
 
-async def check_list(ctx, member):
+async def check_list(ctx, member):#true = is in lobby already
     '''checks if player is in lobby already'''
     for player in player_list:
         if member == player:
             await ctx.send("You're already in the lobby")
-            return True #true = is in lobby already
+            return True 
     return False
 
 async def shuffle(ctx): #might be good to check if lobby is full or not
@@ -99,5 +108,6 @@ async def shuffle(ctx): #might be good to check if lobby is full or not
     result = table.get_string(title="T E N M A N S")
     print(result)
     await ctx.send("Here are the teams\n```" + result + "```")
+    
 bot.run('NTIyNDU4Mzk2NjI5MjcwNTMx.DvLRJA.L1O1cqEIylU8WqVSA2EEDyl3htw')
 
