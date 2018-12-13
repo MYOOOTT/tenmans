@@ -13,6 +13,7 @@ logger.addHandler(handler)
 
 bot = commands.Bot(command_prefix='?')
 player_list = []
+notify_list = []
 
 @bot.event
 async def on_ready():
@@ -35,6 +36,7 @@ async def tenmans(ctx, player: discord.Member=None):
         await ctx.send(str(10 - len(player_list)) + " spot(s) left")
     if (10 - len(player_list) < 1):
         await shuffle(ctx)
+        await notify_players(ctx)
 
 @bot.command(name='shuffle')
 async def reshuffle(ctx):
@@ -48,6 +50,7 @@ async def remove(ctx, member: discord.Member=None):
         person = member
         
     player_list.remove(person)
+    notify_list.remove(person)
     await ctx.send("Removed " + str(person) + " from the lobby.")
     
 @bot.command()
@@ -61,7 +64,13 @@ async def showlist(ctx):
 async def clear(ctx):
     '''clears the lobby'''
     player_list.clear()
+    notify_list.clear()
     await ctx.send("Clearing player lobby...")
+
+@bot.command()
+async def notifyme(ctx):
+    notify_list.append(ctx.author)
+    await ctx.send("I'll let you know when the game is starting")
 
 #---- helper functions ----
 async def check_length(ctx): #False = too many people
@@ -108,6 +117,12 @@ async def shuffle(ctx): #might be good to check if lobby is full or not
     result = table.get_string(title="T E N M A N S")
     print(result)
     await ctx.send("Here are the teams\n```" + result + "```")
+
+async def notify_players(ctx):
+    mention_str = ""
+    for player in notify_list:
+        mention_str += " " + player.mention
+    await ctx.send("The game is ready" + mention_str)
     
 bot.run('NTIyNDU4Mzk2NjI5MjcwNTMx.DvLRJA.L1O1cqEIylU8WqVSA2EEDyl3htw')
 
