@@ -25,25 +25,31 @@ async def on_ready():
 #---- commands ----
     
 @bot.command()
-async def tenmans(ctx, player: discord.Member=None):
+async def tenmans(ctx, player: discord.Member=None): 
+    '''Create/join a ten man lobby''' #probably use an exception error
     if (await check_length(ctx)): #adding more than one player???
         if player == None: #no extra parameter
             await ctx.send(str(ctx.author) + " has joined!")
-            player_list.append(ctx.author)
+            person = ctx.author
         else:
             await ctx.send(str(player) + " has been added!")
-            player_list.append(player)
+            person = player
+        player_list.append(person)
         await ctx.send(str(10 - len(player_list)) + " spot(s) left")
-    if (10 - len(player_list) < 1):
-        await shuffle(ctx)
-        await notify_players(ctx)
+
+        if (10 - len(player_list) == 0):
+            await shuffle(ctx)
+            if (len(notify_list) > 0):
+                await notify_players(ctx)
 
 @bot.command(name='shuffle')
 async def reshuffle(ctx):
+    '''Shuffles the existing teams'''
     await shuffle(ctx)
 
 @bot.command()
 async def remove(ctx, member: discord.Member=None):
+    '''Remove yourself / a person from the lobby'''
     if member == None:
         person = ctx.author
     else:
@@ -55,20 +61,21 @@ async def remove(ctx, member: discord.Member=None):
     
 @bot.command()
 async def showlist(ctx):
-    '''displays the lobby in a pretty table'''
+    '''Displays the lobby in a table'''
     table = PrettyTable()
     table.add_column("Players", await concatenize_players(player_list))
     await ctx.send("```" + table.get_string() + "```")
 
 @bot.command()
 async def clear(ctx):
-    '''clears the lobby'''
+    '''Clears the lobby'''
     player_list.clear()
     notify_list.clear()
     await ctx.send("Clearing player lobby...")
 
 @bot.command()
 async def notifyme(ctx):
+    '''The bot will @you when the lobby is full'''
     notify_list.append(ctx.author)
     await ctx.send("I'll let you know when the game is starting")
 
@@ -78,6 +85,7 @@ async def check_length(ctx): #False = too many people
     if len(player_list) >= 10:
         await ctx.send("Sorry bud, there's too many people")
         return False
+
     else:
         return True
 
@@ -115,7 +123,6 @@ async def shuffle(ctx): #might be good to check if lobby is full or not
     table.align = "c"
 
     result = table.get_string(title="T E N M A N S")
-    print(result)
     await ctx.send("Here are the teams\n```" + result + "```")
 
 async def notify_players(ctx):
