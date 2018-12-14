@@ -42,6 +42,11 @@ async def tenmans(ctx, player: discord.Member=None):
             if (len(notify_list) > 0):
                 await notify_players(ctx)
 
+@tenmans.error
+async def tenmans_error(ctx, error):
+    if isinstance(error, commands.BadArgument):
+        await ctx.send("Sorry, can't find that member. Did you not use @someone?")
+
 @bot.command(name='shuffle')
 async def reshuffle(ctx):
     '''Shuffles the existing teams'''
