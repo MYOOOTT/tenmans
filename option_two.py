@@ -53,16 +53,19 @@ async def reshuffle(ctx):
     await shuffle(ctx)
 
 @bot.command()
-async def remove(ctx, member: discord.Member=None):
+async def leave(ctx):
+    player_list.remove(ctx.author)
+    notify_list.remove(ctx.author)
+    await ctx.send(str(ctx.author) + " has left the lobby")
+
+
+@bot.command()
+async def remove(ctx, member: discord.Member):
     '''Remove yourself / a person from the lobby'''
-    if member == None:
-        person = ctx.author
-    else:
-        person = member
-        
-    player_list.remove(person)
-    notify_list.remove(person)
-    await ctx.send("Removed " + str(person) + " from the lobby.")
+            
+    player_list.remove(member)
+    notify_list.remove(member)
+    await ctx.send("Removed " + str(member) + " from the lobby.")
     
 @bot.command()
 async def showlist(ctx):
@@ -136,5 +139,5 @@ async def notify_players(ctx):
         mention_str += " " + player.mention
     await ctx.send("The game is ready" + mention_str)
     
-bot.run('NTIyNDU4Mzk2NjI5MjcwNTMx.DvLRJA.L1O1cqEIylU8WqVSA2EEDyl3htw')
+bot.run('')
 
