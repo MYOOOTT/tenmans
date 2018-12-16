@@ -3,6 +3,7 @@ import logging
 from discord.ext import commands
 import random
 from prettytable import PrettyTable
+import yaml
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -15,6 +16,9 @@ bot = commands.Bot(command_prefix='?')
 player_list = []
 notify_list = []
 
+with open('config.yml', 'r') as stream:
+    config = yaml.safe_load(stream)
+
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -26,7 +30,7 @@ async def on_ready():
     
 @bot.command()
 async def tenmans(ctx, player: discord.Member=None): 
-    '''Create/join a ten man lobby''' #probably use an exception error
+    '''Create/join a ten man lobby.''' #probably use an exception error
     if (await check_length(ctx)): #adding more than one player???
         if player == None: #no extra parameter
             await ctx.send(str(ctx.author) + " has joined!")
@@ -49,41 +53,49 @@ async def tenmans_error(ctx, error):
 
 @bot.command(name='shuffle')
 async def reshuffle(ctx):
-    '''Shuffles the existing teams'''
+    '''Shuffles the existing teams.'''
     await shuffle(ctx)
 
 @bot.command()
 async def leave(ctx):
+    '''Leave the lobby.'''
     player_list.remove(ctx.author)
-    notify_list.remove(ctx.author)
+    try: 
+        notify_list.remove(ctx.author)
+    except:
+        pass #intentionally pass this exception
+    
     await ctx.send(str(ctx.author) + " has left the lobby")
 
 
 @bot.command()
 async def remove(ctx, member: discord.Member):
-    '''Remove yourself / a person from the lobby'''
-            
+    '''Remove a person from the lobby.'''
     player_list.remove(member)
-    notify_list.remove(member)
+    try:
+        notify_list.remove(member)
+    except:
+        pass
+    
     await ctx.send("Removed " + str(member) + " from the lobby.")
     
 @bot.command()
 async def showlist(ctx):
-    '''Displays the lobby in a table'''
+    '''Displays the lobby in a table.'''
     table = PrettyTable()
     table.add_column("Players", await concatenize_players(player_list))
     await ctx.send("```" + table.get_string() + "```")
 
 @bot.command()
 async def clear(ctx):
-    '''Clears the lobby'''
+    '''Clears the lobby.'''
     player_list.clear()
     notify_list.clear()
     await ctx.send("Clearing player lobby...")
 
 @bot.command()
 async def notifyme(ctx):
-    '''The bot will @you when the lobby is full'''
+    '''The bot will @you when the lobby is full.'''
     notify_list.append(ctx.author)
     await ctx.send("I'll let you know when the game is starting")
 
@@ -139,5 +151,5 @@ async def notify_players(ctx):
         mention_str += " " + player.mention
     await ctx.send("The game is ready" + mention_str)
     
-bot.run('')
+bot.run(config['configurations']['token'])
 
