@@ -67,7 +67,6 @@ async def leave(ctx):
     
     await ctx.send(str(ctx.author) + " has left the lobby")
 
-
 @bot.command()
 async def remove(ctx, member: discord.Member):
     '''Remove a person from the lobby.'''
@@ -98,6 +97,11 @@ async def notifyme(ctx):
     '''The bot will @you when the lobby is full.'''
     notify_list.append(ctx.author)
     await ctx.send("I'll let you know when the game is starting")
+
+@bot.command()
+async def shutdown(ctx):
+    await ctx.send("Shutting down...")
+    await bot.logout()
 
 #---- helper functions ----
 async def check_length(ctx): #False = too many people
