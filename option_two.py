@@ -29,16 +29,16 @@ async def on_ready():
 #---- commands ----
     
 @bot.command()
-async def tenmans(ctx, player: discord.Member=None): 
+async def tenmans(ctx, *players: discord.Member): 
     '''Create/join a ten man lobby.''' #probably use an exception error
     if (await check_length(ctx)): #adding more than one player???
-        if player == None: #no extra parameter
+        if len(players) == 0: #no extra parameter
             await ctx.send(str(ctx.author) + " has joined!")
-            person = ctx.author
+            player_list.append(ctx.author)
         else:
-            await ctx.send(str(player) + " has been added!")
-            person = player
-        player_list.append(person)
+            for x in players:
+                await ctx.send(str(x) + " has been added!")
+                player_list.append(x)
         await ctx.send(str(10 - len(player_list)) + " spot(s) left")
 
         if (10 - len(player_list) == 0):
