@@ -13,11 +13,8 @@ logger.addHandler(handler)
 
 
 bot = commands.Bot(command_prefix='?')
-total_players = 0
-notify_list = []
 player_list = []
-team_one = []
-team_two = []
+notify_list = []
 
 with open('config.yml', 'r') as stream:
     config = yaml.safe_load(stream)
@@ -30,74 +27,32 @@ async def on_ready():
     print('------')
 
 #---- commands ----
+    
 @bot.command()
 async def tenmans(ctx, *players: discord.Member): 
-    '''Create/join a ten man lobby.''' 
-    global total_players #to avoid unboundlocal error
-    if (await check_length(ctx)): 
+    '''Create/join a ten man lobby.''' #probably use an exception error
+    if (await check_length(ctx)): #adding more than one player???
         if len(players) == 0: #no extra parameter
             await ctx.send(str(ctx.author) + " has joined!")
-            total_players += 1
             player_list.append(ctx.author)
         else:
             for x in players:
                 await ctx.send(str(x) + " has been added!")
-                total_players += 1
                 player_list.append(x)
-        await ctx.send(str(10 - total_players) + " spot(s) left")
+        await ctx.send(str(10 - len(player_list)) + " spot(s) left")
 
-        if (10 - total_players == 0):
+        if (10 - len(player_list) == 0):
             await shuffle(ctx)
             if (len(notify_list) > 0):
                 await notify_players(ctx)
-
-@bot.command()
-async def team1(ctx, *players: discord.Member):
-    global total_players
-    if (await check_length(ctx)): 
-        if len(players) == 0: 
-            await ctx.send(str(ctx.author) + " has joined team one!")
-            total_players += 1
-            team_one.append(ctx.author)
-        else:
-            for x in players:
-                await ctx.send(str(x) + " has been added to team one!")
-                total_players += 1
-                team_one.append(x)
-        await ctx.send(str(10 - total_players) + " spot(s) left")
-
-    if (10 - total_players == 0):
-        await shuffle(ctx)
-        if (len(notify_list) > 0):
-            await notify_players(ctx)
-
-@bot.command()
-async def team2(ctx, *players: discord.Member):
-    global total_players
-    if (await check_length(ctx)): 
-        if len(players) == 0: 
-            await ctx.send(str(ctx.author) + " has joined team two!")
-            total_players += 1
-            team_two.append(ctx.author)
-        else:
-            for x in players:
-                await ctx.send(str(x) + " has been added to team two!")
-                total_players += 1
-                team_two.append(x)
-        await ctx.send(str(10 - total_players) + " spot(s) left")
-
-    if (10 - total_players == 0):
-        await shuffle(ctx)
-        if (len(notify_list) > 0):
-            await notify_players(ctx)
 
 @tenmans.error
 async def tenmans_error(ctx, error):
     if isinstance(error, commands.BadArgument):
         await ctx.send("Sorry, can't find that member. Did you not use @someone?")
 
-@bot.command(name='shuffle') #reason for existing:
-async def reshuffle(ctx): #commands cannot call other commands
+@bot.command(name='shuffle')
+async def reshuffle(ctx):
     '''Shuffles the existing teams.'''
     await shuffle(ctx)
 
@@ -124,31 +79,17 @@ async def remove(ctx, member: discord.Member):
     await ctx.send("Removed " + str(member) + " from the lobby.")
     
 @bot.command()
-async def showplayers(ctx):
-    '''Displays the entire player lobby in a table.'''
+async def showlist(ctx):
+    '''Displays the lobby in a table.'''
     table = PrettyTable()
-    player_list.extend(team_one)
-    player_list.extend(team_two)
     table.add_column("Players", await concatenize_players(player_list))
     await ctx.send("```" + table.get_string() + "```")
-
-@bot.command()
-async def showteams(ctx):
-    '''Displays the teams.'''
-    team1 = PrettyTable()
-    team2 = PrettyTable()
-    team1.add_column("Team 1", await concatenize_players(team_one))
-    team2.add_column("Team 2", await concatenize_players(team_two))
-    await ctx.send("```" + team1.get_string() + "\n" + team2.get_string() + "```")
 
 @bot.command()
 async def clear(ctx):
     '''Clears the lobby.'''
     player_list.clear()
     notify_list.clear()
-    team_one.clear()
-    team_two.clear()
-    total_players = 0 
     await ctx.send("Clearing player lobby...")
 
 @bot.command()
@@ -165,7 +106,7 @@ async def shutdown(ctx):
 #---- helper functions ----
 async def check_length(ctx): #False = too many people
     '''checking if there's too many people in list'''
-    if total_players >= 10:
+    if len(player_list) >= 10:
         await ctx.send("Sorry bud, there's too many people")
         return False
 
@@ -191,9 +132,11 @@ async def shuffle(ctx): #might be good to check if lobby is full or not
     '''puts players into teams'''
     str_players = await concatenize_players(player_list)
     random.shuffle(str_players)
+    team_one = []
+    team_two = []
     
     for x in range(len(str_players)):
-        if len(team_one) != 5: #hardcoded, should be changed later
+        if x < 5:
             team_one.append(str_players[x])
         else:
             team_two.append(str_players[x])
