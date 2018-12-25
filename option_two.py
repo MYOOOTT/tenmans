@@ -31,7 +31,7 @@ async def on_ready():
 @bot.command()
 async def tenmans(ctx, *players: discord.Member): 
     '''Create/join a ten man lobby.''' #probably use an exception error
-    if (await check_length(ctx)): #adding more than one player???
+    if (check_length(ctx)):
         if len(players) == 0: #no extra parameter
             await ctx.send(str(ctx.author) + " has joined!")
             player_list.append(ctx.author)
@@ -40,6 +40,8 @@ async def tenmans(ctx, *players: discord.Member):
                 await ctx.send(str(x) + " has been added!")
                 player_list.append(x)
         await ctx.send(str(10 - len(player_list)) + " spot(s) left")
+    else:
+        ctx.send("Ya got too many people")
 
         if (10 - len(player_list) == 0):
             await shuffle(ctx)
@@ -104,14 +106,9 @@ async def shutdown(ctx):
     await bot.logout()
 
 #---- helper functions ----
-async def check_length(ctx): #False = too many people
+def check_length(ctx): #False = too many people
     '''checking if there's too many people in list'''
-    if len(player_list) >= 10:
-        await ctx.send("Sorry bud, there's too many people")
-        return False
-
-    else:
-        return True
+    return len(player_list) >= 10
 
 async def concatenize_players(player_list):
     '''converts Member models to strings'''
