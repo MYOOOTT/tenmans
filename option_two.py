@@ -11,7 +11,6 @@ handler = logging.FileHandler(filename='discord_two.log', encoding='utf-8', mode
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-
 bot = commands.Bot(command_prefix='?')
 player_list = []
 notify_list = []
@@ -29,26 +28,37 @@ async def on_ready():
 #---- commands ----
     
 @bot.command()
-async def tenmans(ctx, *players: discord.Member): 
-    '''Create/join a ten man lobby.''' #probably use an exception error
-    if (check_length(ctx)):
-        if len(players) == 0: #no extra parameter
-            await ctx.send(str(ctx.author) + " has joined!")
-            player_list.append(ctx.author)
-        else:
-            for x in players:
-                await ctx.send(str(x) + " has been added!")
-                player_list.append(x)
-        await ctx.send(str(10 - len(player_list)) + " spot(s) left")
+async def join(ctx):
+    '''Join the lobby'''
+    if (not full()):
+        player_list.append(ctx.author)
+        await ctx.send(str(ctx.author) + " has joined!")
+        await spots_left(ctx)
     else:
-        ctx.send("Ya got too many people")
+        ctx.send("Bro, there's too many people")
 
-        if (10 - len(player_list) == 0):
-            await shuffle(ctx)
-            if (len(notify_list) > 0):
-                await notify_players(ctx)
+@bot.command()
+async def add(ctx, *players:discord.Member):
+    '''Add a player to the lobby'''
+    if (not full()):
+        for x in players:
+            player_list.append(x)
+            await ctx.send(str(x) + " has been added!")
+            await spots_left(ctx)
+    else:
+        ctx.send("Bro, there's too many people")
 
-@tenmans.error
+@bot.command()
+async def start(ctx):
+    '''Starts the lobby'''
+    if full():
+        await shuffle(ctx)
+        if (len(notify_list) > 0):
+            await notify_players(ctx)
+    else:
+        await ctx.send("You don't have enough players")
+
+@add.error
 async def tenmans_error(ctx, error):
     if isinstance(error, commands.BadArgument):
         await ctx.send("Sorry, can't find that member. Did you not use @someone?")
@@ -106,9 +116,9 @@ async def shutdown(ctx):
     await bot.logout()
 
 #---- helper functions ----
-def check_length(ctx): #False = too many people
+def full(): #True = too many people
     '''checking if there's too many people in list'''
-    return len(player_list) >= 10
+    return len(player_list) == 10
 
 async def concatenize_players(player_list):
     '''converts Member models to strings'''
@@ -125,7 +135,7 @@ async def check_list(ctx, member):#true = is in lobby already
             return True 
     return False
 
-async def shuffle(ctx): #might be good to check if lobby is full or not
+async def shuffle(ctx):
     '''puts players into teams'''
     str_players = await concatenize_players(player_list)
     random.shuffle(str_players)
@@ -151,6 +161,9 @@ async def notify_players(ctx):
     for player in notify_list:
         mention_str += " " + player.mention
     await ctx.send("The game is ready" + mention_str)
-    
+
+async def spots_left(ctx):
+    await ctx.send(str(10 - len(player_list)) + " spot(s) left")
+
 bot.run(config['configurations']['token'])
 
