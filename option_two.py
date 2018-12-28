@@ -14,6 +14,8 @@ logger.addHandler(handler)
 bot = commands.Bot(command_prefix='?')
 player_list = []
 notify_list = []
+team_one = []
+team_two = []
 
 with open('config.yml', 'r') as stream:
     config = yaml.safe_load(stream)
@@ -44,7 +46,7 @@ async def add(ctx, *players:discord.Member):
         for x in players:
             player_list.append(x)
             await ctx.send(str(x) + " has been added!")
-            await spots_left(ctx)
+        await spots_left(ctx)
     else:
         ctx.send("Bro, there's too many people")
 
@@ -111,6 +113,14 @@ async def notifyme(ctx):
     await ctx.send("I'll let you know when the game is starting")
 
 @bot.command()
+async def showteams(ctx):
+    '''Displays the current teams'''
+    if (len(team_one) == 5 and len(team_two) == 5):
+        await ctx.send("```" + concatenate_teams(team_one, team_two) + "```")
+    else:
+        await ctx.send("Teams haven't been made / not enough players.")
+    
+@bot.command()
 async def shutdown(ctx):
     await ctx.send("Shutting down...")
     await bot.logout()
@@ -135,10 +145,14 @@ async def check_list(ctx, member):#true = is in lobby already
             return True 
     return False
 
+
 async def shuffle(ctx):
     '''puts players into teams'''
     str_players = await concatenize_players(player_list)
     random.shuffle(str_players)
+    global team_one
+    global team_two
+
     team_one = []
     team_two = []
     
@@ -148,13 +162,18 @@ async def shuffle(ctx):
         else:
             team_two.append(str_players[x])
 
-    table = PrettyTable()
-    table.add_column("Team 1", team_one)
-    table.add_column("Team 2", team_two)
+    result = concatenate_teams(team_one, team_two)
+    await ctx.send("Here are the teams\n```" + result + "```")
+
+def concatenate_teams(team1:list, team2:list):
+    table =  PrettyTable()
+    
+    table.add_column("Team 1", team1)
+    table.add_column("Team 2", team2)
+    
     table.align = "c"
 
-    result = table.get_string(title="T E N M A N S")
-    await ctx.send("Here are the teams\n```" + result + "```")
+    return table.get_string()
 
 async def notify_players(ctx):
     mention_str = ""
