@@ -54,7 +54,8 @@ async def add(ctx, *players:discord.Member):
 async def start(ctx):
     '''Starts the lobby'''
     if full():
-        await shuffle(ctx)
+        result = shuffle()
+        await ctx.send("Here are the teams\n```" + result + "```")
         if (len(notify_list) > 0):
             await notify_players(ctx)
     else:
@@ -68,7 +69,9 @@ async def tenmans_error(ctx, error):
 @bot.command(name='shuffle')
 async def reshuffle(ctx):
     '''Shuffles the existing teams.'''
-    await shuffle(ctx)
+    result = shuffle()
+    await ctx.send("Reshuffled the teams\n```" + result + "```")
+
 
 @bot.command()
 async def leave(ctx):
@@ -115,8 +118,10 @@ async def notifyme(ctx):
 @bot.command()
 async def showteams(ctx):
     '''Displays the current teams'''
+    str_teamone = concatenate_players(team_one)
+    str_teamtwo = concatenate_players(team_two)
     if (len(team_one) == 5 and len(team_two) == 5):
-        await ctx.send("```" + concatenate_teams(team_one, team_two) + "```")
+        await ctx.send("```" + concatenate_teams(str_teamone, str_teamtwo) + "```")
     else:
         await ctx.send("Teams haven't been made / not enough players.")
 
@@ -128,13 +133,15 @@ async def swap(ctx, player1: discord.Member, player2: discord.Member):
         team_one.append(player2)
         team_two.append(player1)
         team_two.remove(player2)
-    elif ((check_team(player1, team_two) and check_team(player2, team_one)):
+        await ctx.send("Swapped " + str(player1) + " and " + str(player2))
+    elif ((check_team(player1, team_two) and check_team(player2, team_one))):
         team_one.remove(player2)
         team_one.append(player1)
         team_two.append(player2)
         team_two.remove(player1)
+        await ctx.send("Swapped " + str(player1) + " and " + str(player2))
     else:
-        ctx.send("Are you sure that these two are on opposite teams?")
+        await ctx.send("Are you sure that these two are on opposite teams?")
 
 @bot.command()
 async def shutdown(ctx):
@@ -146,7 +153,7 @@ def full(): #True = too many people
     '''checking if there's too many people in list'''
     return len(player_list) == 10
 
-async def concatenize_players(player_list):
+def concatenate_players(player_list):
     '''converts Member models to strings'''
     string_list = []
     for player in player_list:
@@ -162,24 +169,24 @@ async def check_list(ctx, member):#true = is in lobby already
     return False
 
 
-async def shuffle(ctx):
+def shuffle():
     '''puts players into teams'''
-    str_players = await concatenize_players(player_list)
-    random.shuffle(str_players)
+    random.shuffle(player_list)
     global team_one
     global team_two
 
     team_one = []
     team_two = []
     
-    for x in range(len(str_players)):
+    for x in range(len(player_list)):
         if x < 5:
-            team_one.append(str_players[x])
+            team_one.append(player_list[x])
         else:
-            team_two.append(str_players[x])
-
-    result = concatenate_teams(team_one, team_two)
-    await ctx.send("Here are the teams\n```" + result + "```")
+            team_two.append(player_list[x])
+    
+    str_teamone = concatenate_players(team_one)
+    str_teamtwo = concatenate_players(team_two)
+    return concatenate_teams(str_teamone, str_teamtwo)
 
 def concatenate_teams(team1:list, team2:list):
     table =  PrettyTable()
