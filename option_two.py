@@ -119,7 +119,23 @@ async def showteams(ctx):
         await ctx.send("```" + concatenate_teams(team_one, team_two) + "```")
     else:
         await ctx.send("Teams haven't been made / not enough players.")
-    
+
+@bot.command()
+async def swap(ctx, player1: discord.Member, player2: discord.Member):
+    '''Swaps two players on opposite teams'''
+    if ((check_team(player1, team_one) and check_team(player2, team_two))):
+        team_one.remove(player1)
+        team_one.append(player2)
+        team_two.append(player1)
+        team_two.remove(player2)
+    elif ((check_team(player1, team_two) and check_team(player2, team_one)):
+        team_one.remove(player2)
+        team_one.append(player1)
+        team_two.append(player2)
+        team_two.remove(player1)
+    else:
+        ctx.send("Are you sure that these two are on opposite teams?")
+
 @bot.command()
 async def shutdown(ctx):
     await ctx.send("Shutting down...")
@@ -183,6 +199,12 @@ async def notify_players(ctx):
 
 async def spots_left(ctx):
     await ctx.send(str(10 - len(player_list)) + " spot(s) left")
+
+def check_team(player: discord.Member, team: list):
+    for x in team:
+        if player == x:
+            return True
+    return False
 
 bot.run(config['configurations']['token'])
 
