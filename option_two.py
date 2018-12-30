@@ -29,14 +29,12 @@ async def on_ready():
     print('------')
     
 #---- helper functions ----
-def lobby_exist():
-    async def predicate(ctx):
-        if total_players != 0:
-            return True
-        else:
-            await ctx.send("Create a lobby first before using this command")
-            return False
-    return commands.check(predicate)
+async def lobby_exist(ctx):
+    if total_players != 0:
+        return True
+    else:
+        await ctx.send("Create a lobby first")
+        return False
 
 def full(): #True = too many people
     '''checking if there's too many people in list'''
@@ -106,50 +104,53 @@ def check_team(player: discord.Member, team: list):
 
 @bot.command()
 async def create(ctx, num_players:int):
+    '''Creates the lobby'''
     if num_players % 2 > 0:
         await ctx.send("You need an even # of players to play")
     else:
         global total_players
         total_players = num_players
         await ctx.send("Lobby created for " + total_players + " total players.")
+        
 @create.error
 async def create_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("You need to input the total # of players")
     
 @bot.command()
-@lobby_exist()
 async def join(ctx):
     '''Join the lobby'''
-    if (not full()):
-        player_list.append(ctx.author)
-        await ctx.send(str(ctx.author) + " has joined!")
-        await spots_left(ctx)
-    else:
-        ctx.send("Bro, there's too many people")
+    if (await lobby_exist()):
+        if (not full()):
+            player_list.append(ctx.author)
+            await ctx.send(str(ctx.author) + " has joined!")
+            await spots_left(ctx)
+        else:
+            ctx.send("Bro, there's too many people")
 
 @bot.command()
-@lobby_exist()
 async def add(ctx, *players:discord.Member):
     '''Add a player to the lobby'''
-    if (not full()):
-        for x in players:
-            player_list.append(x)
-            await ctx.send(str(x) + " has been added!")
-        await spots_left(ctx)
-    else:
-        ctx.send("Bro, there's too many people")
+    if (await lobby_exist()):
+        if (not full()):
+            for x in players:
+                player_list.append(x)
+                await ctx.send(str(x) + " has been added!")
+            await spots_left(ctx)
+        else:
+            ctx.send("Bro, there's too many people")
 
 @bot.command()
 async def start(ctx):
     '''Starts the lobby'''
-    if full():
-        result = shuffle()
-        await ctx.send("Here are the teams\n```" + result + "```")
-        if (len(notify_list) > 0):
-            await notify_players(ctx)
-    else:
-        await ctx.send("You don't have enough players")
+    if (await lobby_exist()):
+        if full():
+            result = shuffle()
+            await ctx.send("Here are the teams\n```" + result + "```")
+            if (len(notify_list) > 0):
+                await notify_players(ctx)
+        else:
+            await ctx.send("You don't have enough players")
 
 @add.error
 async def tenmans_error(ctx, error):
@@ -157,44 +158,44 @@ async def tenmans_error(ctx, error):
         await ctx.send("Sorry, can't find that member. Did you not use @someone?")
 
 @bot.command(name='shuffle')
-@lobby_exist()
 async def reshuffle(ctx):
     '''Shuffles the existing teams.'''
-    result = shuffle()
-    await ctx.send("Reshuffled the teams\n```" + result + "```")
+    if (await lobby_exist()):
+        result = shuffle()
+        await ctx.send("Reshuffled the teams\n```" + result + "```")
 
 
 @bot.command()
-@lobby_exist()
 async def leave(ctx):
     '''Leave the lobby.'''
-    player_list.remove(ctx.author)
-    try: 
-        notify_list.remove(ctx.author)
-    except:
-        pass #intentionally pass this exception
+    if (await lobby_exist()):
+        player_list.remove(ctx.author)
+        try: 
+            notify_list.remove(ctx.author)
+        except:
+            pass #intentionally pass this exception
     
-    await ctx.send(str(ctx.author) + " has left the lobby")
+        await ctx.send(str(ctx.author) + " has left the lobby")
 
 @bot.command()
-@lobby_exist()
 async def remove(ctx, member: discord.Member):
     '''Remove a person from the lobby.'''
-    player_list.remove(member)
-    try:
-        notify_list.remove(member)
-    except:
-        pass
+    if (await lobby_exist()):
+        player_list.remove(member)
+        try:
+            notify_list.remove(member)
+        except:
+            pass
     
-    await ctx.send("Removed " + str(member) + " from the lobby.")
+        await ctx.send("Removed " + str(member) + " from the lobby.")
     
 @bot.command()
-@lobby_exist()
 async def showlist(ctx):
     '''Displays the lobby in a table.'''
-    table = PrettyTable()
-    table.add_column("Players", await concatenize_players(player_list))
-    await ctx.send("```" + table.get_string() + "```")
+    if (await lobby_exist()):
+        table = PrettyTable()
+        table.add_column("Players", await concatenize_players(player_list))
+        await ctx.send("```" + table.get_string() + "```")
 
 @bot.command()
 async def reset(ctx):
@@ -208,42 +209,42 @@ async def reset(ctx):
     await ctx.send("Resetting player lobby...")
 
 @bot.command()
-@lobby_exist()
 async def notifyme(ctx):
     '''The bot will @you when the lobby is full.'''
-    notify_list.append(ctx.author)
-    await ctx.send("I'll let you know when the game is starting")
+    if (await lobby_exist()):
+        notify_list.append(ctx.author)
+        await ctx.send("I'll let you know when the game is starting")
 
 @bot.command()
-@lobby_exist()
 async def showteams(ctx):
     '''Displays the current teams'''
-    num_team_members = total_players / 2
-    str_teamone = concatenate_players(team_one)
-    str_teamtwo = concatenate_players(team_two)
-    if (len(team_one) == num_team_members and len(team_two) == num_team_members):
-        await ctx.send("```" + concatenate_teams(str_teamone, str_teamtwo) + "```")
-    else:
-        await ctx.send("Teams haven't been made / not enough players.")
+    if (await lobby_exist()):
+        num_team_members = total_players / 2
+        str_teamone = concatenate_players(team_one)
+        str_teamtwo = concatenate_players(team_two)
+        if (len(team_one) == num_team_members and len(team_two) == num_team_members):
+            await ctx.send("```" + concatenate_teams(str_teamone, str_teamtwo) + "```")
+        else:
+            await ctx.send("Teams haven't been made / not enough players.")
 
 @bot.command()
-@lobby_exist()
 async def swap(ctx, player1: discord.Member, player2: discord.Member):
     '''Swaps two players on opposite teams'''
-    if ((check_team(player1, team_one) and check_team(player2, team_two))):
-        team_one.remove(player1)
-        team_one.append(player2)
-        team_two.append(player1)
-        team_two.remove(player2)
-        await ctx.send("Swapped " + str(player1) + " and " + str(player2))
-    elif ((check_team(player1, team_two) and check_team(player2, team_one))):
-        team_one.remove(player2)
-        team_one.append(player1)
-        team_two.append(player2)
-        team_two.remove(player1)
-        await ctx.send("Swapped " + str(player1) + " and " + str(player2))
-    else:
-        await ctx.send("Are you sure that these two are on opposite teams?")
+    if (await lobby_exist()):
+        if ((check_team(player1, team_one) and check_team(player2, team_two))):
+            team_one.remove(player1)
+            team_one.append(player2)
+            team_two.append(player1)
+            team_two.remove(player2)
+            await ctx.send("Swapped " + str(player1) + " and " + str(player2))
+        elif ((check_team(player1, team_two) and check_team(player2, team_one))):
+            team_one.remove(player2)
+            team_one.append(player1)
+            team_two.append(player2)
+            team_two.remove(player1)
+            await ctx.send("Swapped " + str(player1) + " and " + str(player2))
+        else:
+            await ctx.send("Are you sure that these two are on opposite teams?")
 
 @bot.command()
 async def shutdown(ctx):
