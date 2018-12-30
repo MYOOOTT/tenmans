@@ -214,7 +214,7 @@ async def reset(ctx):
 
 @bot.command()
 async def notifyme(ctx):
-    '''The bot will @you when the lobby is full.'''
+    '''The bot will @you when the lobby is starting.'''
     if (await git (ctx)):
         notify_list.append(ctx.author)
         await ctx.send("I'll let you know when the game is starting")
