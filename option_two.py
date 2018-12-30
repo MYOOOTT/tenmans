@@ -105,17 +105,21 @@ def check_team(player: discord.Member, team: list):
 @bot.command()
 async def create(ctx, num_players:int):
     '''Creates the lobby'''
-    if num_players % 2 > 0:
-        await ctx.send("You need an even # of players to play")
-    else:
+    if num_players % 2 == 0:
+        print("Lobby count: " + str(num_players))
         global total_players
         total_players = num_players
-        await ctx.send("Lobby created for " + total_players + " total players.")
+        await ctx.send("Lobby created for " + str(total_players) + " total players.")
+    else:
+        print("Lobby count: " + str(num_players))
+        await ctx.send("You need an even # of players to play")
         
 @create.error
 async def create_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("You need to input the total # of players")
+    else:
+        print(error)
     
 @bot.command()
 async def join(ctx):
@@ -194,7 +198,7 @@ async def showlist(ctx):
     '''Displays the lobby in a table.'''
     if (await lobby_exist(ctx)):
         table = PrettyTable()
-        table.add_column("Players", await concatenize_players(player_list))
+        table.add_column("Players", await concatenate_players(player_list))
         await ctx.send("```" + table.get_string() + "```")
 
 @bot.command()
