@@ -105,7 +105,7 @@ def check_team(player: discord.Member, team: list):
 @bot.command()
 async def create(ctx, num_players:int):
     '''Creates the lobby'''
-    if num_players % 2 > 0:
+    if num_players % 2 != 0:
         await ctx.send("You need an even # of players to play")
     else:
         global total_players
@@ -194,7 +194,7 @@ async def showlist(ctx):
     '''Displays the lobby in a table.'''
     if (await lobby_exist()):
         table = PrettyTable()
-        table.add_column("Players", await concatenize_players(player_list))
+        table.add_column("Players", await concatenate_players(player_list))
         await ctx.send("```" + table.get_string() + "```")
 
 @bot.command()
