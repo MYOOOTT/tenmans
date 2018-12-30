@@ -120,7 +120,7 @@ async def create_error(ctx, error):
 @bot.command()
 async def join(ctx):
     '''Join the lobby'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         if (not full()):
             player_list.append(ctx.author)
             await ctx.send(str(ctx.author) + " has joined!")
@@ -131,7 +131,7 @@ async def join(ctx):
 @bot.command()
 async def add(ctx, *players:discord.Member):
     '''Add a player to the lobby'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         if (not full()):
             for x in players:
                 player_list.append(x)
@@ -143,7 +143,7 @@ async def add(ctx, *players:discord.Member):
 @bot.command()
 async def start(ctx):
     '''Starts the lobby'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         if full():
             result = shuffle()
             await ctx.send("Here are the teams\n```" + result + "```")
@@ -160,7 +160,7 @@ async def tenmans_error(ctx, error):
 @bot.command(name='shuffle')
 async def reshuffle(ctx):
     '''Shuffles the existing teams.'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         result = shuffle()
         await ctx.send("Reshuffled the teams\n```" + result + "```")
 
@@ -168,7 +168,7 @@ async def reshuffle(ctx):
 @bot.command()
 async def leave(ctx):
     '''Leave the lobby.'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         player_list.remove(ctx.author)
         try: 
             notify_list.remove(ctx.author)
@@ -180,7 +180,7 @@ async def leave(ctx):
 @bot.command()
 async def remove(ctx, member: discord.Member):
     '''Remove a person from the lobby.'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         player_list.remove(member)
         try:
             notify_list.remove(member)
@@ -192,7 +192,7 @@ async def remove(ctx, member: discord.Member):
 @bot.command()
 async def showlist(ctx):
     '''Displays the lobby in a table.'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         table = PrettyTable()
         table.add_column("Players", await concatenize_players(player_list))
         await ctx.send("```" + table.get_string() + "```")
@@ -211,14 +211,14 @@ async def reset(ctx):
 @bot.command()
 async def notifyme(ctx):
     '''The bot will @you when the lobby is full.'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         notify_list.append(ctx.author)
         await ctx.send("I'll let you know when the game is starting")
 
 @bot.command()
 async def showteams(ctx):
     '''Displays the current teams'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         num_team_members = total_players / 2
         str_teamone = concatenate_players(team_one)
         str_teamtwo = concatenate_players(team_two)
@@ -230,7 +230,7 @@ async def showteams(ctx):
 @bot.command()
 async def swap(ctx, player1: discord.Member, player2: discord.Member):
     '''Swaps two players on opposite teams'''
-    if (await lobby_exist()):
+    if (await lobby_exist(ctx)):
         if ((check_team(player1, team_one) and check_team(player2, team_two))):
             team_one.remove(player1)
             team_one.append(player2)
