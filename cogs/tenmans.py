@@ -3,17 +3,29 @@ from discord.ext import commands
 from prettytable import PrettyTable
 import random
 
+total_players = 0
+player_list = []
+notify_list = []
+team_one = []
+team_two = []
+    
 class Tenmans:
+
+
     def __init__(self, bot):
         self.bot = bot
-        
+    
     #---- helper functions ----
     async def lobby_exist(ctx):
-        if total_players != 0:
-            return True
-        else:
-            await ctx.send("Create a lobby first")
-            return False
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return value
+        return wrapper
+            if total_players != 0:
+                return True
+            else:
+                await ctx.send("Create a lobby first")
+                return False
 
     def full(): #True = too many people
         '''checking if there's too many people in list'''
@@ -82,7 +94,7 @@ class Tenmans:
     #---- commands ----
 
     @commands.command()
-    async def create(ctx, num_players:int):
+    async def create(self, ctx, num_players:int):
         '''Creates the lobby'''
         if num_players % 2 == 0:
             print("Lobby count: " + str(num_players))
@@ -94,14 +106,14 @@ class Tenmans:
             await ctx.send("You need an even # of players to play")
             
     @create.error
-    async def create_error(ctx, error):
+    async def create_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("You need to input the total # of players")
         else:
             print(error)
         
     @commands.command()
-    async def join(ctx):
+    async def join(self, ctx):
         '''Join the lobby'''
         if (await lobby_exist(ctx)):
             if (not full()):
@@ -112,7 +124,7 @@ class Tenmans:
                 ctx.send("Bro, there's too many people")
 
     @commands.command()
-    async def add(ctx, *players:discord.Member):
+    async def add(self, ctx, *players:discord.Member):
         '''Add a player to the lobby'''
         if (await lobby_exist(ctx)):
             if (not full()):
@@ -124,7 +136,7 @@ class Tenmans:
                 ctx.send("Bro, there's too many people")
 
     @commands.command()
-    async def start(ctx):
+    async def start(self, ctx):
         '''Starts the lobby'''
         if (await lobby_exist(ctx)):
             if full():
@@ -136,12 +148,12 @@ class Tenmans:
                 await ctx.send("You don't have enough players")
 
     @add.error
-    async def add_error(ctx, error):
+    async def add_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send("Sorry, can't find that member. Did you not use @someone?")
 
     @commands.command(name='shuffle')
-    async def reshuffle(ctx):
+    async def reshuffle(self, ctx):
         '''Shuffles the existing teams.'''
         if (await lobby_exist(ctx)):
             result = shuffle()
@@ -149,7 +161,7 @@ class Tenmans:
 
 
     @commands.command()
-    async def leave(ctx):
+    async def leave(self, ctx):
         '''Leave the lobby.'''
         if (await lobby_exist(ctx)):
             player_list.remove(ctx.author)
@@ -161,7 +173,7 @@ class Tenmans:
             await ctx.send(str(ctx.author) + " has left the lobby")
 
     @commands.command()
-    async def remove(ctx, member: discord.Member):
+    async def remove(self, ctx, member: discord.Member):
         '''Remove a person from the lobby.'''
         if (await lobby_exist(ctx)):
             player_list.remove(member)
@@ -173,7 +185,7 @@ class Tenmans:
             await ctx.send("Removed " + str(member) + " from the lobby.")
         
     @commands.command()
-    async def showlist(ctx):
+    async def showlist(self, ctx):
         '''Displays the lobby in a table.'''
         if (await lobby_exist(ctx)):
             table = PrettyTable()
@@ -181,9 +193,9 @@ class Tenmans:
             await ctx.send("```" + table.get_string() + "```")
 
     @commands.command()
-    async def reset(ctx):
+    async def reset(self, ctx):
         '''Clears the lobby.'''
-        global total_players
+        
         total_players = 0
         team_one.clear()
         team_two.clear()
@@ -192,14 +204,14 @@ class Tenmans:
         await ctx.send("Resetting player lobby...")
 
     @commands.command()
-    async def notifyme(ctx):
+    async def notifyme(self, ctx):
         '''The bot will @you when the lobby is starting.'''
         if (await git (ctx)):
             notify_list.append(ctx.author)
             await ctx.send("I'll let you know when the game is starting")
 
     @commands.command()
-    async def showteams(ctx):
+    async def showteams(self, ctx):
         '''Displays the current teams'''
         if (await lobby_exist(ctx)):
             num_team_members = total_players / 2
@@ -211,7 +223,7 @@ class Tenmans:
                 await ctx.send("Teams haven't been made / not enough players.")
 
     @commands.command()
-    async def swap(ctx, player1: discord.Member, player2: discord.Member):
+    async def swap(self, ctx, player1: discord.Member, player2: discord.Member):
         '''Swaps two players on opposite teams'''
         if (await lobby_exist(ctx)):
             if ((check_team(player1, team_one) and check_team(player2, team_two))):

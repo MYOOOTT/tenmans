@@ -10,11 +10,6 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 bot = commands.Bot(command_prefix='?')
-total_players = 0
-player_list = []
-notify_list = []
-team_one = []
-team_two = []
 
 with open('config.yml', 'r') as stream:
     config = yaml.safe_load(stream)
