@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from prettytable import PrettyTable
 import random
+import functools
 
 total_players = 0
 player_list = []
@@ -16,16 +17,15 @@ class Tenmans:
         self.bot = bot
     
     #---- helper functions ----
-    async def lobby_exist(ctx):
+    def lobby_exist(func):
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            return value
-        return wrapper
+        async def wrapper(*args, **kwargs):
             if total_players != 0:
-                return True
+                return await func(*args, **kwargs)
             else:
-                await ctx.send("Create a lobby first")
-                return False
+                raise Exception("Lobby not created")
+        return wrapper
+
 
     def full(): #True = too many people
         '''checking if there's too many people in list'''
@@ -91,8 +91,15 @@ class Tenmans:
                 return True
         return False
 
-    #---- commands ----
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send("Make a lobby first", delete_after = 5)
 
+        if isinstance(error, commands.CommandNotFound):
+            await ctx.send("Are you using a viable command?", delete_after = 5) 
+
+    #---- commands ----
+    
     @commands.command()
     async def create(self, ctx, num_players:int):
         '''Creates the lobby'''
@@ -108,11 +115,12 @@ class Tenmans:
     @create.error
     async def create_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("You need to input the total # of players")
+            await ctx.send("You need to input the total # of players", delete_after=5)
         else:
             print(error)
         
     @commands.command()
+    @lobby_exist
     async def join(self, ctx):
         '''Join the lobby'''
         if (await lobby_exist(ctx)):
@@ -124,6 +132,7 @@ class Tenmans:
                 ctx.send("Bro, there's too many people")
 
     @commands.command()
+    @lobby_exist
     async def add(self, ctx, *players:discord.Member):
         '''Add a player to the lobby'''
         if (await lobby_exist(ctx)):
@@ -135,7 +144,13 @@ class Tenmans:
             else:
                 ctx.send("Bro, there's too many people")
 
+    @add.error
+    async def add_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("Sorry, can't find that member. Did you not use @someone?")
+
     @commands.command()
+    @lobby_exist
     async def start(self, ctx):
         '''Starts the lobby'''
         if (await lobby_exist(ctx)):
@@ -147,12 +162,9 @@ class Tenmans:
             else:
                 await ctx.send("You don't have enough players")
 
-    @add.error
-    async def add_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("Sorry, can't find that member. Did you not use @someone?")
 
     @commands.command(name='shuffle')
+    @lobby_exist
     async def reshuffle(self, ctx):
         '''Shuffles the existing teams.'''
         if (await lobby_exist(ctx)):
@@ -161,6 +173,7 @@ class Tenmans:
 
 
     @commands.command()
+    @lobby_exist
     async def leave(self, ctx):
         '''Leave the lobby.'''
         if (await lobby_exist(ctx)):
@@ -173,6 +186,7 @@ class Tenmans:
             await ctx.send(str(ctx.author) + " has left the lobby")
 
     @commands.command()
+    @lobby_exist
     async def remove(self, ctx, member: discord.Member):
         '''Remove a person from the lobby.'''
         if (await lobby_exist(ctx)):
@@ -204,6 +218,7 @@ class Tenmans:
         await ctx.send("Resetting player lobby...")
 
     @commands.command()
+    @lobby_exist
     async def notifyme(self, ctx):
         '''The bot will @you when the lobby is starting.'''
         if (await git (ctx)):
@@ -223,6 +238,7 @@ class Tenmans:
                 await ctx.send("Teams haven't been made / not enough players.")
 
     @commands.command()
+    @lobby_exist
     async def swap(self, ctx, player1: discord.Member, player2: discord.Member):
         '''Swaps two players on opposite teams'''
         if (await lobby_exist(ctx)):
