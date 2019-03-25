@@ -198,7 +198,7 @@ async def showlist(ctx):
     '''Displays the lobby in a table.'''
     if (await lobby_exist(ctx)):
         table = PrettyTable()
-        table.add_column("Players", await concatenate_players(player_list))
+        table.add_column("Players", concatenate_players(player_list))
         await ctx.send("```" + table.get_string() + "```")
 
 @bot.command()
