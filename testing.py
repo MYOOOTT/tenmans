@@ -11,7 +11,7 @@ class TestTeam(unittest.TestCase):
     
     def test_multiple_add(self):
         self.team.add("Player1", "Player2")
-        self.assertTrue("Player1" in self.team and "Player2" in self.team)
+        self.assertTrue("Player1" in self.team and "Player2" in self.team, msg=str(self.team.get_players()))
     
     def test_duplicate_add(self):
         self.team.add("Player") 

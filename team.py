@@ -9,16 +9,22 @@ class Team():
     def get_players(self):
         return self.players
     
-    def add(self, player): 
-        assert len(self.players) + 1 <= self.max, "Too many players!"
-        assert not player in self, "This player already exists in this team."
-        self.players.append(player)
+    #one positional parameter to enforce that at least one player has to be added
+    def add(self, player, *args): #args = multiple players
+        total_players = (player,) + args #comma to indicate it is a tuple
+        for person in total_players:
+            assert not person in self, "Player '" + str(person) + "' already exists in this team."
+            assert len(self.players) + 1 <= self.max, "Team has exceeded capacity."
+            self.players.append(person)
 
     def remove(self, player):
         self.players.remove(player)
 
     def shuffle(self):
         random.shuffle(self.players)
+
+    def clear(self):
+        self.players.clear()
 
     def __contains__(self, player):
         return player in self.players
