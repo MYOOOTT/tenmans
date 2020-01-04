@@ -42,4 +42,13 @@ class TestTeam(unittest.TestCase):
         compared_players = (x1 == x2 for x1, x2 in zip(y, players))
         self.assertTrue(all(compared_players))
 
+    def test_iterable_realcase(self):
+        self.team.add("Player1")
+        self.team.add("Player2")
+        found = False
+        for player in self.team:
+            if player == "Player2":
+                found = True
+        self.assertTrue(found)
+
 unittest.main()
