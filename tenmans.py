@@ -13,7 +13,7 @@ class Scrim(commands.Cog):
     #--- helper functions ---#
     ##########################
 
-    def stringify_teams(team1:list, team2:list):
+    def stringify_teams(self, team1:list, team2:list):
         table = PrettyTable()
 
         table.add_column("Team 1", team1)
@@ -29,7 +29,7 @@ class Scrim(commands.Cog):
     async def create(self, ctx, num_players:int):
         '''Creates the lobby, use number of players on each team, not total.'''
         if type(num_players) == int:
-            await ctx.send("Lobby created for " + str(num_players) + " players on each team.")
+            await ctx.send("Lobby created for " + str(num_players) + " players on each team. Join now!")
             self.team_one = Team(num_players)
             self.team_two = Team(num_players)
         else:
@@ -44,6 +44,8 @@ class Scrim(commands.Cog):
         else:
             await ctx.send("Unforeseen error.")
             print(error)
+
+    
 
     
     

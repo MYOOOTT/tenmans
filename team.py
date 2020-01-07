@@ -1,4 +1,3 @@
-import discord
 import random
 
 class Team():
@@ -20,11 +19,11 @@ class Team():
     def remove(self, player):
         self.players.remove(player)
 
-    def shuffle(self):
-        random.shuffle(self.players)
-
     def clear(self):
         self.players.clear()
+
+    def __bool__(self):
+        return len(self.players) >= self.max
 
     def __contains__(self, player):
         return player in self.players

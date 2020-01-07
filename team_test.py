@@ -51,4 +51,16 @@ class TestTeam(unittest.TestCase):
                 found = True
         self.assertTrue(found)
 
-unittest.main()
+    def test_clear(self):
+        self.team.add("Player1")
+        self.team.add("Player2")
+        self.team.clear()
+        self.team == None
+
+    def test_bool(self):
+        self.team.add("Player1")
+        self.team.add("Player2")
+        self.assertTrue(self.team)
+
+if __name__ == '__main__':
+    unittest.main()
