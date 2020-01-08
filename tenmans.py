@@ -7,8 +7,7 @@ class Scrim(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.team_one = None
-        self.team_two = None
+        self.lobby = None
 
     #--- helper functions ---#
     ##########################
@@ -27,11 +26,10 @@ class Scrim(commands.Cog):
 
     @commands.command()
     async def create(self, ctx, num_players:int):
-        '''Creates the lobby, use number of players on each team, not total.'''
-        if type(num_players) == int:
-            await ctx.send("Lobby created for " + str(num_players) + " players on each team. Join now!")
-            self.team_one = Team(num_players)
-            self.team_two = Team(num_players)
+        '''starts up the lobby, use number of TOTAL players.'''
+        if type(num_players) == int or num_players // 2 != 0:
+            await ctx.send("Lobby created for " + str(num_players) + " total players. Join now!")
+            self.lobby = Lobby(num_players)
         else:
             raise commands.UserInputError
 
@@ -40,12 +38,12 @@ class Scrim(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("You need to input the number of players on each team.")
         elif isinstance(error, commands.UserInputError):
-            await ctx.send("That's not a number, input the number of players on each team.")
+            await ctx.send("Either you put in an odd number or didn't put in a number. Try again.")
         else:
             await ctx.send("Unforeseen error.")
             print(error)
+        
 
-    
 
     
     
