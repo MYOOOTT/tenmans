@@ -22,7 +22,7 @@ class Team():
     def clear(self):
         self.players.clear()
 
-    def __bool__(self):
+    def __bool__(self): #is lobby full? True or False
         return len(self.players) >= self.max
 
     def __contains__(self, player):
