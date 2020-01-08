@@ -3,6 +3,7 @@ import random
 
 class Lobby():
     def __init__(self, max):
+        assert max // 2 == 0, "Uneven amount of players. This is the TOTAL amount of players, so it should be even!"
         self.player_list = []
         self.max = max
         self.ON_EACH_TEAM = max / 2

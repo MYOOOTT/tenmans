@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from prettytable import PrettyTable
 from team import Team
+from lobby import Lobby
 
 class Scrim(commands.Cog):
 
@@ -20,6 +21,15 @@ class Scrim(commands.Cog):
 
         table.align = "c"
         return table.get_string()
+
+    '''  THIS NEEDS TO BE IMPLEMENTED IN THE FUTURE
+    def lobby_exist(func):
+        def wrapper(self, *args, **kwargs):
+            assert self.lobby != None, "Make sure lobby exists before doing something!"
+            func(self, *args, **kwargs)
+        return wrapper
+
+    '''
 
     #--- commands ---#
     ##################
@@ -42,8 +52,20 @@ class Scrim(commands.Cog):
         else:
             await ctx.send("Unforeseen error.")
             print(error)
-        
-
-
     
+    @commands.command()
+    #@lobby_exist
+    async def join(self, ctx):
+        assert self.lobby != None, "Make sure the lobby exists first!"
+        self.lobby.add(str(ctx.author))
+        await ctx.send(str(ctx.author) + " has joined!")
+    
+    @join.error
+    async def join_error(self, ctx, error):
+        if isinstance(error, AssertionError):
+            await ctx.send(error.message)
+        else:
+            print(error)
+            await ctx.send("Unexpected error. Try again maybe?")
+
     
