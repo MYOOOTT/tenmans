@@ -44,6 +44,9 @@ class LobbyTest(unittest.TestCase):
         self.lobby.swap("Player1", "Player2")
         self.assertTrue("Player1" in self.lobby.team_two and "Player2" in self.lobby.team_one)
 
+    def test_spots_left(self):
+        self.lobby.add("Player1", "Player2")
+        self.assertEqual(self.lobby.spots_left(), 2)
 
 if __name__ == '__main__':
     unittest.main()
