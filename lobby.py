@@ -22,10 +22,17 @@ class Lobby():
 
     def add(self, player, *args): #args = multiple players
         total_players = (player,) + args #comma to indicate it is a tuple
+        added = []
         for person in total_players:
             assert not person in self.player_list, "Player '" + str(person) + "' already exists in the lobby."
-            assert len(self.player_list) + 1 <= self.max, "Lobby at max capacity."
+            if len(self.player_list) + 1 > self.max:
+                error_message = "Lobby at max capacity."
+                if len(added) != 0:
+                    error_message += " But these players were added: " + str(added)
+                raise AssertionError(error_message)
             self.player_list.append(person)
+            added.append(person)
+
 
 
     def remove(self, player):

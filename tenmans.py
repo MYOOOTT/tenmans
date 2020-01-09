@@ -28,11 +28,8 @@ class Scrim(commands.Cog):
     @commands.command()
     async def create(self, ctx, num_players:int):
         '''starts up the lobby, use number of TOTAL players.'''
-        if type(num_players) == int or num_players % 2 != 0:
-            await ctx.send("Lobby created for " + str(num_players) + " total players. Join now!")
-            self.lobby = Lobby(num_players)
-        else:
-            raise commands.UserInputError
+        self.lobby = Lobby(num_players)
+        await ctx.send("Lobby created for " + str(num_players) + " total players. Join now!")
 
     @create.error
     async def create_error(self, ctx, error):
@@ -58,10 +55,29 @@ class Scrim(commands.Cog):
     async def join_error(self, ctx, error):
         if isinstance(error.original, AttributeError):
             await ctx.send("Be sure to create a lobby first!")
+        elif isinstance(error.original, AssertionError):
+            await ctx.send(error.original.args)
         else:
             print(error)
             await ctx.send("Unexpected error. Try again maybe?")
 
+    @commands.command()
+    async def add(self, ctx, player, *args):
+        self.lobby.add(player, *args)
+        total_players = (player,) + args
+        str_total_players = str(total_players)
+        await ctx.send("Added " + str_total_players + ".")
+
+    @add.error
+    async def add_error(self, ctx, error):
+        if isinstance(error.original, AssertionError):
+            await ctx.send(error.original.args)
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Make sure you're adding someone and that it's not blank!")
+        else:
+            print(error)
+            await ctx.send("Unexpected error. Try again maybe?")
+        
     @commands.command()
     async def clear(self, ctx):
         self.lobby = None
