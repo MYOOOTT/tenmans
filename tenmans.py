@@ -73,7 +73,7 @@ class Scrim(commands.Cog):
         if isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Make sure you're adding someone and that it's not blank!")
+            await ctx.send("Make sure you're adding someone!")
         else:
             print(error)
             await ctx.send("Unexpected error. Try again maybe?")
