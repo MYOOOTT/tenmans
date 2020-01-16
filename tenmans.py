@@ -83,6 +83,21 @@ class Scrim(commands.Cog):
         self.lobby = None
         await ctx.send("Lobby cleared.")
 
+    @commands.command()
+    async def remove(self, ctx, player):
+        self.lobby.remove(player)
+        await ctx.send("Removed " + str(player))
+
+    @remove.error 
+    async def remove_error(self, ctx, error):
+        if isinstance(error.original, AssertionError):
+            await ctx.send(error.original.args)
+        elif isinstance(error.original, ValueError):
+            await ctx.send("Player is not in the list! Usernames are case senstive!")
+        else:
+            print(error)
+            await ctx.send("Unexpected error. Try again maybe?")
+    
     
 
     
