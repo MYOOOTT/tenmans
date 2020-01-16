@@ -60,7 +60,6 @@ class Lobby():
         self.player_list.clear()
 
     def swap(self, player1, player2):
-        assert not self.team_one and not self.team_two, "Teams haven't been created!"
         assert player1 in self.player_list, player1 + " is not in the lobby."
         assert player2 in self.player_list, player2 + " is not in the lobby."
 
@@ -78,4 +77,3 @@ class Lobby():
             self.team_one.add(player1)
             self.team_two.remove(player1)
             self.team_two.add(player2)
-

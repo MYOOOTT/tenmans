@@ -22,6 +22,7 @@ class Scrim(commands.Cog):
         table.align = "c"
         return table.get_string()
 
+
     #--- commands ---#
     ##################
 
@@ -70,7 +71,9 @@ class Scrim(commands.Cog):
 
     @add.error
     async def add_error(self, ctx, error):
-        if isinstance(error.original, AssertionError):
+        if isinstance(error.original, AttributeError):
+            await ctx.send("Be sure to create a lobby first!")
+        elif isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Make sure you're adding someone!")
@@ -82,14 +85,16 @@ class Scrim(commands.Cog):
     async def clear(self, ctx):
         self.lobby = None
         await ctx.send("Lobby cleared.")
-
+    
     @commands.command()
     async def remove(self, ctx, player):
         self.lobby.remove(player)
         await ctx.send("Removed " + str(player))
-
+    
     @remove.error 
     async def remove_error(self, ctx, error):
+        if isinstance(error.original, AttributeError):
+            await ctx.send("Be sure to create a lobby first!")
         if isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         elif isinstance(error.original, ValueError):
@@ -97,7 +102,59 @@ class Scrim(commands.Cog):
         else:
             print(error)
             await ctx.send("Unexpected error. Try again maybe?")
-    
-    
 
+    @commands.command()
+    async def showlist(self, ctx):
+        table = PrettyTable()
+        table.add_column("Players", self.lobby.player_list)
+        await ctx.send("```" + table.get_string() + "```")
+    
+    @showlist.error 
+    async def showlist_error(self, ctx, error):
+        if isinstance(error.original, AttributeError):
+            await ctx.send("Be sure to create a lobby first!")
+        elif isinstance(error.original, AssertionError):
+            await ctx.send(error.original.args)
+        else:
+            print(error)
+            await ctx.send("Unexpected error. Try again maybe?")
+
+    @commands.command()
+    async def showteams(self, ctx):
+        table = PrettyTable()
+        table.add_column("Team 1", self.lobby.get_team_one().get_players())
+        table.add_column("Team 2", self.lobby.get_team_two().get_players())
+        await ctx.send("```" + table.get_string() + "```")
+    
+    @showteams.error 
+    async def showteam_error(self, ctx, error):
+        if isinstance(error.original, AttributeError):
+            await ctx.send("Be sure to create a lobby first!")
+        elif isinstance(error.original, AssertionError):
+            await ctx.send(error.original.args)
+        else:
+            print(error)
+            await ctx.send("Unexpected error. Try again maybe?")
+
+    @commands.command()
+    async def swap(self, ctx, player1, player2):
+        self.lobby.swap(player1, player2)
+        await ctx.invoke(self.showteams)
+    
+    @swap.error 
+    async def swap_error(self, ctx, error):
+        if isinstance(error.original, AttributeError):
+            await ctx.send("Be sure to create a lobby first!")
+        if isinstance(error.original, AssertionError):
+            await ctx.send(error.original.args)
+        elif isinstance(error.original, ValueError):
+            await ctx.send("Player is not in the team(s)! Usernames are case senstive!")
+        else:
+            print(error)
+            await ctx.send("Unexpected error. Try again maybe?")
+
+    @commands.command()
+    async def shuffle(self, ctx):
+        self.lobby.shuffle()
+        await ctx.invoke(self.showteams)
     
