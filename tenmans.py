@@ -3,9 +3,10 @@ from discord.ext import commands
 from prettytable import PrettyTable
 from team import Team
 from lobby import Lobby
+import re
 
 class Scrim(commands.Cog):
-
+    pattern_object = re.compile(r"<@!(\d*)>")
     def __init__(self, bot):
         self.bot = bot
         self.lobby = None
@@ -22,6 +23,19 @@ class Scrim(commands.Cog):
         table.align = "c"
         return table.get_string()
 
+    def extract_id(self, players):
+        new_list = []
+        for person in players:
+            matched = re.match(Scrim.pattern_object, person)
+            if matched:
+                print("Searching for USER with this ID:", matched.group(1))
+                user = self.bot.get_user(int(matched.group(1)))
+                new_list.append(user.name)
+            else:
+                new_list.append(person)
+        
+        return new_list
+
 
     #--- commands ---#
     ##################
@@ -30,7 +44,7 @@ class Scrim(commands.Cog):
     async def create(self, ctx, num_players:int):
         '''starts up the lobby, use number of TOTAL players.'''
         self.lobby = Lobby(num_players)
-        await ctx.send("Lobby created for " + str(num_players) + " total players. Join now!")
+        await ctx.send("Lobby created for " + str(num_players) + " total players. Use ?join to enter now or ?add NAME_HERE to add someone!")
 
     @create.error
     async def create_error(self, ctx, error):
@@ -45,12 +59,12 @@ class Scrim(commands.Cog):
     
     @commands.command()
     async def join(self, ctx):
-        self.lobby.add(str(ctx.author))
+        self.lobby.add(str(ctx.author.name))
         if self.lobby.spots_left() == 0:
             spots_message = "Lobby is now at max capacity (" + str(self.lobby.max) + ")." 
         else:
             spots_message = str(self.lobby.spots_left()) + " player(s) can join."
-        await ctx.send(str(ctx.author) + " has joined!" + " " + spots_message)
+        await ctx.send(str(ctx.author.name) + " has joined!" + " " + spots_message)
     
     @join.error
     async def join_error(self, ctx, error):
@@ -64,22 +78,13 @@ class Scrim(commands.Cog):
 
     @commands.command()
     async def add(self, ctx, player, *args):
-        self.lobby.add(player, *args)
-        total_players = (player,) + args
-        str_total_players = str(total_players)
-        await ctx.send("Added " + str_total_players + ".")
+        total_players = (player,) + args #to consider player a part of a tuple
+        print("Before extract id:" ,str(total_players))
+        total_players = self.extract_id(total_players)
+        self.lobby.add(*total_players)
+        await ctx.send("Added " + str(total_players) + ".")
 
-    @add.error
-    async def add_error(self, ctx, error):
-        if isinstance(error.original, AttributeError):
-            await ctx.send("Be sure to create a lobby first!")
-        elif isinstance(error.original, AssertionError):
-            await ctx.send(error.original.args)
-        elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("Make sure you're adding someone!")
-        else:
-            print(error)
-            await ctx.send("Unexpected error. Try again maybe?")
+    
         
     @commands.command()
     async def clear(self, ctx):
