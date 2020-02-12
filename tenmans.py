@@ -7,6 +7,8 @@ import re
 
 class Scrim(commands.Cog):
     pattern_object = re.compile(r"<@!(\d*)>")
+    CREATE_LOBBY_MESSAGE = "Be sure to create a lobby first using the `?create` command!"
+
     def __init__(self, bot):
         self.bot = bot
         self.lobby = None
@@ -42,7 +44,7 @@ class Scrim(commands.Cog):
 
     @commands.command()
     async def create(self, ctx, num_players:int):
-        '''starts up the lobby, use number of TOTAL players.'''
+        '''Starts up the lobby, use number of TOTAL players.'''
         self.lobby = Lobby(num_players)
         await ctx.send("Lobby created for " + str(num_players) + " total players. Use ?join to enter now or ?add NAME_HERE to add someone!")
 
@@ -59,6 +61,7 @@ class Scrim(commands.Cog):
     
     @commands.command()
     async def join(self, ctx):
+        '''Join an existing lobby.'''
         self.lobby.add(str(ctx.author.name))
         if self.lobby.spots_left() == 0:
             spots_message = "Lobby is now at max capacity (" + str(self.lobby.max) + ")." 
@@ -69,7 +72,7 @@ class Scrim(commands.Cog):
     @join.error
     async def join_error(self, ctx, error):
         if isinstance(error.original, AttributeError):
-            await ctx.send("Be sure to create a lobby first!")
+            await ctx.send(Scrim.CREATE_LOBBY_MESSAGE)
         elif isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         else:
@@ -78,6 +81,7 @@ class Scrim(commands.Cog):
 
     @commands.command()
     async def add(self, ctx, player, *args):
+        '''Add another player by @ing them or with a custom name.'''
         total_players = (player,) + args #to consider player a part of a tuple
         print("Before extract id:" ,str(total_players))
         total_players = self.extract_id(total_players)
@@ -88,18 +92,20 @@ class Scrim(commands.Cog):
         
     @commands.command()
     async def clear(self, ctx):
+        '''Reset the lobby.'''
         self.lobby = None
         await ctx.send("Lobby cleared.")
     
     @commands.command()
     async def remove(self, ctx, player):
+        '''Removes another player. This command is case sensitive!'''
         self.lobby.remove(player)
         await ctx.send("Removed " + str(player))
     
     @remove.error 
     async def remove_error(self, ctx, error):
         if isinstance(error.original, AttributeError):
-            await ctx.send("Be sure to create a lobby first!")
+            await ctx.send(Scrim.CREATE_LOBBY_MESSAGE)
         if isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         elif isinstance(error.original, ValueError):
@@ -110,6 +116,7 @@ class Scrim(commands.Cog):
 
     @commands.command()
     async def showlist(self, ctx):
+        '''Outputs a list of the players in the lobby.'''
         table = PrettyTable()
         table.add_column("Players", self.lobby.player_list)
         await ctx.send("```" + table.get_string() + "```")
@@ -117,7 +124,7 @@ class Scrim(commands.Cog):
     @showlist.error 
     async def showlist_error(self, ctx, error):
         if isinstance(error.original, AttributeError):
-            await ctx.send("Be sure to create a lobby first!")
+            await ctx.send(Scrim.CREATE_LOBBY_MESSAGE)
         elif isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         else:
@@ -126,6 +133,7 @@ class Scrim(commands.Cog):
 
     @commands.command()
     async def showteams(self, ctx):
+        '''Outputs a table of the teams.'''
         table = PrettyTable()
         table.add_column("Team 1", self.lobby.get_team_one().get_players())
         table.add_column("Team 2", self.lobby.get_team_two().get_players())
@@ -134,7 +142,7 @@ class Scrim(commands.Cog):
     @showteams.error 
     async def showteam_error(self, ctx, error):
         if isinstance(error.original, AttributeError):
-            await ctx.send("Be sure to create a lobby first!")
+            await ctx.send(Scrim.CREATE_LOBBY_MESSAGE)
         elif isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         else:
@@ -143,13 +151,14 @@ class Scrim(commands.Cog):
 
     @commands.command()
     async def swap(self, ctx, player1, player2):
+        '''Swaps two players on opposite teams.'''
         self.lobby.swap(player1, player2)
         await ctx.invoke(self.showteams)
     
     @swap.error 
     async def swap_error(self, ctx, error):
         if isinstance(error.original, AttributeError):
-            await ctx.send("Be sure to create a lobby first!")
+            await ctx.send(Scrim.CREATE_LOBBY_MESSAGE)
         if isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         elif isinstance(error.original, ValueError):
@@ -160,6 +169,7 @@ class Scrim(commands.Cog):
 
     @commands.command()
     async def shuffle(self, ctx):
+        '''Shuffles the lobby.'''
         self.lobby.shuffle()
         await ctx.invoke(self.showteams)
     
