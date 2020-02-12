@@ -172,4 +172,19 @@ class Scrim(commands.Cog):
         '''Shuffles the lobby.'''
         self.lobby.shuffle()
         await ctx.invoke(self.showteams)
+
+    @commands.command()
+    async def tenmans(self, ctx):
+        '''Teaches you how to use the bot.'''
+        message = '''
+        Hey I heard you wanted to tenman? Here's how use the commands. 
+        1. Create the lobby
+            - `?create 10`
+        2. Add players / join the lobby
+            - `?join` or `?add @username` or `?add random_name`
+            - you can view who's in the lobby with `?showlist`
+        3. Shuffle the players into teams, and I will provide the teams. 
+            - `?shuffle`
+        '''
+        await ctx.send(message)
     
