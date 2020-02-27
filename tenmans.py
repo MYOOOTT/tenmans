@@ -1,13 +1,13 @@
 import discord
 from discord.ext import commands
-from prettytable import PrettyTable
+from tabulate import tabulate
 from team import Team
 from lobby import Lobby
 import re
 
 class Scrim(commands.Cog):
     pattern_object = re.compile(r"<@!(\d*)>")
-    CREATE_LOBBY_MESSAGE = "Be sure to create a lobby first using the `?create` command!"
+    CREATE_LOBBY_MESSAGE = "Be sure to create a lobby first using the `?create NUMBER` command!"
 
     def __init__(self, bot):
         self.bot = bot
@@ -51,7 +51,7 @@ class Scrim(commands.Cog):
     @create.error
     async def create_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("You need to input the number of players on each team.")
+            await ctx.send("You need to input the number of players on each team. For example, `?create 10`.")
         elif isinstance(error.original, AssertionError):
             await ctx.send("Uneven amount of players. This is the TOTAL amount of players, so it should be even!")
         else:
@@ -83,12 +83,9 @@ class Scrim(commands.Cog):
     async def add(self, ctx, player, *args):
         '''Add another player by @ing them or with a custom name.'''
         total_players = (player,) + args #to consider player a part of a tuple
-        print("Before extract id:" ,str(total_players))
         total_players = self.extract_id(total_players)
         self.lobby.add(*total_players)
         await ctx.send("Added " + str(total_players) + ".")
-
-    
         
     @commands.command()
     async def clear(self, ctx):
@@ -104,12 +101,14 @@ class Scrim(commands.Cog):
     
     @remove.error 
     async def remove_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument): 
+            await ctx.send("Make sure you include what player you're removing!")
         if isinstance(error.original, AttributeError):
             await ctx.send(Scrim.CREATE_LOBBY_MESSAGE)
         if isinstance(error.original, AssertionError):
             await ctx.send(error.original.args)
         elif isinstance(error.original, ValueError):
-            await ctx.send("Player is not in the list! Usernames are case senstive!")
+            await ctx.send("Player can't be found! Usernames are case senstive. If you want to remove a player with spaces in their name, put quotation marks around it. `?remove \"Name With Spaces\"`")
         else:
             print(error)
             await ctx.send("Unexpected error. Try again maybe?")
@@ -117,9 +116,8 @@ class Scrim(commands.Cog):
     @commands.command()
     async def showlist(self, ctx):
         '''Outputs a list of the players in the lobby.'''
-        table = PrettyTable()
-        table.add_column("Players", self.lobby.player_list)
-        await ctx.send("```" + table.get_string() + "```")
+        row_numbers = [i for i in range(1, len(self.lobby.player_list)+1)]
+        await ctx.send("```\n" + tabulate({"Players":self.lobby.player_list}, headers="keys", showindex=row_numbers, tablefmt="psql") + "```")
     
     @showlist.error 
     async def showlist_error(self, ctx, error):
@@ -134,10 +132,10 @@ class Scrim(commands.Cog):
     @commands.command()
     async def showteams(self, ctx):
         '''Outputs a table of the teams.'''
-        table = PrettyTable()
-        table.add_column("Team 1", self.lobby.get_team_one().get_players())
-        table.add_column("Team 2", self.lobby.get_team_two().get_players())
-        await ctx.send("```" + table.get_string() + "```")
+
+        table = {"Team 1": self.lobby.get_team_one(), "Team 2": self.lobby.get_team_two()}
+        roll_string = "Roll #" + str(self.lobby.num_rolls())
+        await ctx.send(roll_string + "```\n" + tabulate(table, headers="keys",tablefmt="psql") + "```")
     
     @showteams.error 
     async def showteam_error(self, ctx, error):
@@ -183,8 +181,8 @@ class Scrim(commands.Cog):
         2. Add players / join the lobby
             - `?join` or `?add @username` or `?add random_name`
             - you can view who's in the lobby with `?showlist`
+            - want to add a name with spaces in it? use quotation marks! `?add \"Name With Spaces\"`
         3. Shuffle the players into teams, and I will provide the teams. 
             - `?shuffle`
         '''
         await ctx.send(message)
-    

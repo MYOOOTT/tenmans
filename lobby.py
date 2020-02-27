@@ -9,7 +9,11 @@ class Lobby():
         self.ON_EACH_TEAM = max / 2
         self.team_one = Team(self.ON_EACH_TEAM)
         self.team_two = Team(self.ON_EACH_TEAM)
+        self.roll_number = 0
     
+    def num_rolls(self):
+        return self.roll_number
+        
     def spots_left(self):
         return self.max - len(self.player_list)
     
@@ -44,6 +48,7 @@ class Lobby():
             self.team_two.remove(player)
 
     def shuffle(self):
+        self.roll_number += 1
         self.team_one.clear()
         self.team_two.clear()
         random.shuffle(self.player_list)
@@ -76,4 +81,4 @@ class Lobby():
             self.team_one.remove(player2)
             self.team_one.add(player1)
             self.team_two.remove(player1)
-            self.team_two.add(player2)
+            self.team_two.add(player2)\
